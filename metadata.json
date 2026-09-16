@@ -1,0 +1,7 @@
+{
+  "name": "LifeOps Daily Planner",
+  "description": "Personal operations AI agent that organizes your day, manages calendar commitments, breaks projects into actionable steps, and dynamically replans schedule.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+
