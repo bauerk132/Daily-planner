@@ -1,0 +1,3 @@
+## 2024-10-24 - Unnecessary O(N) list operations on keystrokes
+**Learning:** In React components like `TaskBacklog`, computing derived metrics or filtering lists across multiple views (e.g., counting tasks for different tabs) directly in the render body causes severe lag when local state updates rapidly (like typing in a "New Task" form). The app was running `tasks.filter` 6 times per keystroke instead of memoizing.
+**Action:** Always wrap heavy list derivations (`reduce`, `filter`, grouped mapping) in `useMemo` specifically when the component contains rapidly updating local state like controlled inputs.
