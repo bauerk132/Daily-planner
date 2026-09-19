@@ -133,7 +133,8 @@ export const Timeline: React.FC<TimelineProps> = ({
                       {block.task_id && onCompleteBlock && !isCompleted && (
                         <button
                           onClick={() => onCompleteBlock(block)}
-                          className="p-1 rounded text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
+                          aria-label="Mark task completed"
+                          className="p-1 rounded text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
                           title="Mark task completed"
                         >
                           <Check className="w-4 h-4" />
