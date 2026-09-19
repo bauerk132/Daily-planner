@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, TaskPriority, TaskCategory, RecurrenceRule, RecurrenceFrequency } from '../models/types.ts';
 import { CheckSquare, Plus, Clock, AlertCircle, Shield, Briefcase, GraduationCap, FileText, Repeat, Calendar } from 'lucide-react';
 
@@ -24,12 +24,46 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
   const [newRecurrence, setNewRecurrence] = useState<'none' | RecurrenceFrequency>('none');
   const [newDueDate, setNewDueDate] = useState<string>('');
 
-  const filteredTasks = tasks.filter(t => {
-    if (filter === 'pending') return t.status !== 'completed';
-    if (filter === 'completed') return t.status === 'completed';
-    if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-    return true;
-  });
+  const { filteredTasks, tabCounts, recurringCount } = useMemo(() => {
+    const counts = {
+      pending: 0,
+      recurring: 0,
+      completed: 0,
+      all: tasks.length
+    };
+
+    const filtered: Task[] = [];
+
+    tasks.forEach(t => {
+      const isCompleted = t.status === 'completed';
+      const isRecurring = Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
+
+      if (isCompleted) {
+        counts.completed++;
+      } else {
+        counts.pending++;
+      }
+      if (isRecurring) {
+        counts.recurring++;
+      }
+
+      if (filter === 'all') {
+        filtered.push(t);
+      } else if (filter === 'completed' && isCompleted) {
+        filtered.push(t);
+      } else if (filter === 'pending' && !isCompleted) {
+        filtered.push(t);
+      } else if (filter === 'recurring' && isRecurring) {
+        filtered.push(t);
+      }
+    });
+
+    return {
+      filteredTasks: filtered,
+      tabCounts: counts,
+      recurringCount: counts.recurring
+    };
+  }, [tasks, filter]);
 
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
@@ -114,8 +148,6 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setNewRecurrence('none');
     setIsAdding(false);
   };
-
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
@@ -238,12 +270,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 my-3 text-xs flex-wrap">
         {(['pending', 'recurring', 'completed', 'all'] as const).map((tab) => {
-          const count = tasks.filter(t => {
-            if (tab === 'all') return true;
-            if (tab === 'completed') return t.status === 'completed';
-            if (tab === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-            return t.status !== 'completed';
-          }).length;
+          const count = tabCounts[tab];
 
           return (
             <button
