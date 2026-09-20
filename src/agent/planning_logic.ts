@@ -98,8 +98,15 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
   const dayEndMinutes = parseHHMM(dayEndTime);
   const conflicts: ScheduleConflict[] = [];
 
+  // PERFORMANCE OPTIMIZATION: Pre-compute parsed times to avoid repetitive `parseHHMM` calls in loops
+  const parsedEvents = events.map(e => ({
+    ...e,
+    startMins: parseHHMM(e.start),
+    endMins: parseHHMM(e.end)
+  }));
+
   // 1. Detect Calendar Conflicts
-  const sortedEvents = [...events].sort((a, b) => parseHHMM(a.start) - parseHHMM(b.start));
+  const sortedEvents = [...parsedEvents].sort((a, b) => a.startMins - b.startMins);
   for (let i = 0; i < sortedEvents.length; i++) {
     for (let j = i + 1; j < sortedEvents.length; j++) {
       const e1 = sortedEvents[i];
@@ -136,17 +143,19 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
     }
   }
 
-  // Convert hard events into fixed blocks
-  const fixedBlocks: DailyPlanBlock[] = sortedEvents
-    .filter(e => parseHHMM(e.end) > currentMinutes)
+  // Convert hard events into fixed blocks with pre-computed parsed times
+  const fixedBlocks = sortedEvents
+    .filter(e => e.endMins > currentMinutes)
     .map(e => ({
       id: `block-evt-${e.id}`,
       title: e.title,
       start: e.start,
       end: e.end,
-      type: 'appointment',
-      priority: 'fixed',
-      status: parseHHMM(e.start) <= currentMinutes && parseHHMM(e.end) > currentMinutes ? 'current' : 'upcoming',
+      startMins: e.startMins,
+      endMins: e.endMins,
+      type: 'appointment' as const,
+      priority: 'fixed' as const,
+      status: e.startMins <= currentMinutes && e.endMins > currentMinutes ? 'current' as const : 'upcoming' as const,
       notes: e.location ? `Location: ${e.location}. ${e.notes || ''}` : e.notes
     }));
 
@@ -161,15 +170,15 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
   // Helper to test if a time interval collides with fixed events
   const findCollision = (startMins: number, endMins: number) => {
     return fixedBlocks.find(b => {
-      const bStart = parseHHMM(b.start);
-      const bEnd = parseHHMM(b.end);
+      const bStart = b.startMins;
+      const bEnd = b.endMins;
       return Math.max(startMins, bStart) < Math.min(endMins, bEnd);
     });
   };
 
   // Helper to insert travel buffer if an event has a location and isn't immediate
   for (const evt of fixedBlocks) {
-    const evtStartM = parseHHMM(evt.start);
+    const evtStartM = evt.startMins;
     if (evtStartM > cursorMinutes && evt.notes && evt.notes.includes('Location:')) {
       const travelStartM = Math.max(cursorMinutes, evtStartM - 25);
       if (travelStartM < evtStartM && !findCollision(travelStartM, evtStartM)) {
@@ -185,8 +194,9 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
         });
       }
     }
-    // Add the event itself to schedule
-    schedule.push(evt);
+    // Add the event itself to schedule (strip the pre-computed properties not needed in DailyPlanBlock)
+    const { startMins, endMins, ...evtBlock } = evt;
+    schedule.push(evtBlock);
   }
 
   // Now fit tasks into open gaps between now and dayEndMinutes
@@ -211,30 +221,30 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
 
       // Check if cursor is inside a fixed block
       const collidingFixed = fixedBlocks.find(b => {
-        const bStart = parseHHMM(b.start);
-        const bEnd = parseHHMM(b.end);
+        const bStart = b.startMins;
+        const bEnd = b.endMins;
         return cursorMinutes >= bStart && cursorMinutes < bEnd;
       });
 
       if (collidingFixed) {
         // Advance cursor past this fixed block plus a 10m buffer
-        cursorMinutes = parseHHMM(collidingFixed.end) + 10;
+        cursorMinutes = collidingFixed.endMins + 10;
         continue;
       }
 
       // Find next fixed block
       const upcomingFixed = fixedBlocks
-        .filter(b => parseHHMM(b.start) > cursorMinutes)
-        .sort((a, b) => parseHHMM(a.start) - parseHHMM(b.start))[0];
+        .filter(b => b.startMins > cursorMinutes)
+        .sort((a, b) => a.startMins - b.startMins)[0];
 
       const availableMinutesUntilNextFixed = upcomingFixed 
-        ? parseHHMM(upcomingFixed.start) - cursorMinutes 
+        ? upcomingFixed.startMins - cursorMinutes
         : dayEndMinutes - cursorMinutes;
 
       // If open window is tiny (< 15 mins), add a short breather or jump
       if (availableMinutesUntilNextFixed < 15) {
         if (upcomingFixed) {
-          cursorMinutes = parseHHMM(upcomingFixed.end) + 10;
+          cursorMinutes = upcomingFixed.endMins + 10;
         } else {
           cursorMinutes = dayEndMinutes;
         }
@@ -251,7 +261,7 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
       if (currentChunkDuration < 15) {
         // Can't fit a meaningful slice here, advance
         if (upcomingFixed) {
-          cursorMinutes = parseHHMM(upcomingFixed.end) + 10;
+          cursorMinutes = upcomingFixed.endMins + 10;
         } else {
           cursorMinutes = dayEndMinutes;
         }
@@ -286,7 +296,7 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
       if (currentChunkDuration >= 45 && cursorMinutes + 15 <= dayEndMinutes) {
         const breakEnd = cursorMinutes + 15;
         // ensure break doesn't overlap next fixed block
-        if (!upcomingFixed || breakEnd <= parseHHMM(upcomingFixed.start)) {
+        if (!upcomingFixed || breakEnd <= upcomingFixed.startMins) {
           schedule.push({
             id: `break-${cursorMinutes}`,
             title: 'Rest / Hydration Break',
