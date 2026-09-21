@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, DailyPlanBlock, TaskPriority } from '../models/types.ts';
 import { 
   BarChart, 
@@ -46,128 +46,161 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
 }) => {
   const [activeMetricView, setActiveMetricView] = useState<'distribution' | 'progress'>('distribution');
 
-  // 1. Task Completion Metrics
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === 'completed');
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
-  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
+  // Optimization: Memoize all derived analytics data to prevent expensive recalculations
+  // on every render (e.g., when toggling the activeMetricView state).
+  // Expected Impact: Improves render performance by avoiding redundant array iterations and math.
+  const {
+    totalTasks,
+    completedTasks,
+    completionPercentage,
+    completedMinutes,
+    totalEstimatedMinutes,
+    remainingMinutes,
+    minutesPercentage,
+    totalScheduledMinutes,
+    priorityDistributionData,
+    priorityCompletionBreakdown,
+    taskProgressChartData,
+    completionDonutData
+  } = useMemo(() => {
+    // 1. Task Completion Metrics
+    const totalTasks = tasks.length;
+    const completedTasks = tasks.filter(t => t.status === 'completed');
+    const pendingTasks = tasks.filter(t => t.status !== 'completed');
+    const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
-  // Total estimated minutes completed vs remaining
-  const completedMinutes = completedTasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
-  const totalEstimatedMinutes = tasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
-  const remainingMinutes = Math.max(0, totalEstimatedMinutes - completedMinutes);
-  const minutesPercentage = totalEstimatedMinutes > 0 
-    ? Math.round((completedMinutes / totalEstimatedMinutes) * 100) 
-    : 0;
+    // Total estimated minutes completed vs remaining
+    const completedMinutes = completedTasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
+    const totalEstimatedMinutes = tasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
+    const remainingMinutes = Math.max(0, totalEstimatedMinutes - completedMinutes);
+    const minutesPercentage = totalEstimatedMinutes > 0
+      ? Math.round((completedMinutes / totalEstimatedMinutes) * 100)
+      : 0;
 
-  // 2. Scheduled Time Distribution across Priority Levels (calculated from schedule blocks)
-  // Time math for block duration in minutes
-  const getBlockDuration = (start: string, end: string): number => {
-    const [sH, sM] = start.split(':').map(Number);
-    const [eH, eM] = end.split(':').map(Number);
-    return (eH * 60 + eM) - (sH * 60 + sM);
-  };
-
-  const priorityTimeMap: Record<string, { minutes: number; blockCount: number }> = {
-    urgent: { minutes: 0, blockCount: 0 },
-    important: { minutes: 0, blockCount: 0 },
-    flexible: { minutes: 0, blockCount: 0 },
-    optional: { minutes: 0, blockCount: 0 },
-    fixed: { minutes: 0, blockCount: 0 },
-  };
-
-  schedule.forEach(block => {
-    const duration = Math.max(0, getBlockDuration(block.start, block.end));
-    const prioKey = block.priority in priorityTimeMap ? block.priority : 'optional';
-    priorityTimeMap[prioKey].minutes += duration;
-    priorityTimeMap[prioKey].blockCount += 1;
-  });
-
-  const totalScheduledMinutes = Object.values(priorityTimeMap).reduce((acc, val) => acc + val.minutes, 0);
-
-  // Data for Priority Distribution Bar Chart & Donut Chart
-  const priorityDistributionData = [
-    {
-      priority: 'urgent' as const,
-      name: 'Urgent',
-      minutes: priorityTimeMap.urgent.minutes,
-      hours: Number((priorityTimeMap.urgent.minutes / 60).toFixed(1)),
-      blocks: priorityTimeMap.urgent.blockCount,
-      color: PRIORITY_CONFIG.urgent.color,
-      fill: PRIORITY_CONFIG.urgent.color
-    },
-    {
-      priority: 'important' as const,
-      name: 'Important',
-      minutes: priorityTimeMap.important.minutes,
-      hours: Number((priorityTimeMap.important.minutes / 60).toFixed(1)),
-      blocks: priorityTimeMap.important.blockCount,
-      color: PRIORITY_CONFIG.important.color,
-      fill: PRIORITY_CONFIG.important.color
-    },
-    {
-      priority: 'flexible' as const,
-      name: 'Flexible',
-      minutes: priorityTimeMap.flexible.minutes,
-      hours: Number((priorityTimeMap.flexible.minutes / 60).toFixed(1)),
-      blocks: priorityTimeMap.flexible.blockCount,
-      color: PRIORITY_CONFIG.flexible.color,
-      fill: PRIORITY_CONFIG.flexible.color
-    },
-    {
-      priority: 'optional' as const,
-      name: 'Optional',
-      minutes: priorityTimeMap.optional.minutes,
-      hours: Number((priorityTimeMap.optional.minutes / 60).toFixed(1)),
-      blocks: priorityTimeMap.optional.blockCount,
-      color: PRIORITY_CONFIG.optional.color,
-      fill: PRIORITY_CONFIG.optional.color
-    },
-    {
-      priority: 'fixed' as const,
-      name: 'Fixed Appts',
-      minutes: priorityTimeMap.fixed.minutes,
-      hours: Number((priorityTimeMap.fixed.minutes / 60).toFixed(1)),
-      blocks: priorityTimeMap.fixed.blockCount,
-      color: PRIORITY_CONFIG.fixed.color,
-      fill: PRIORITY_CONFIG.fixed.color
-    }
-  ].filter(d => d.minutes > 0 || d.blocks > 0);
-
-  // 3. Task Completion by Priority Level
-  const priorityCompletionBreakdown = (['urgent', 'important', 'flexible', 'optional'] as TaskPriority[]).map(prio => {
-    const tasksInPrio = tasks.filter(t => t.priority === prio);
-    const completedInPrio = tasksInPrio.filter(t => t.status === 'completed');
-    const totalMins = tasksInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
-    const doneMins = completedInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
-    return {
-      priority: prio,
-      name: PRIORITY_CONFIG[prio].label,
-      totalCount: tasksInPrio.length,
-      completedCount: completedInPrio.length,
-      pendingCount: tasksInPrio.length - completedInPrio.length,
-      percent: tasksInPrio.length > 0 ? Math.round((completedInPrio.length / tasksInPrio.length) * 100) : 0,
-      totalMinutes: totalMins,
-      completedMinutes: doneMins,
-      remainingMinutes: Math.max(0, totalMins - doneMins),
-      color: PRIORITY_CONFIG[prio].color
+    // 2. Scheduled Time Distribution across Priority Levels (calculated from schedule blocks)
+    // Time math for block duration in minutes
+    const getBlockDuration = (start: string, end: string): number => {
+      const [sH, sM] = start.split(':').map(Number);
+      const [eH, eM] = end.split(':').map(Number);
+      return (eH * 60 + eM) - (sH * 60 + sM);
     };
-  }).filter(p => p.totalCount > 0);
 
-  // Progress comparison data for Stacked Bar
-  const taskProgressChartData = priorityCompletionBreakdown.map(p => ({
-    name: p.name,
-    'Completed (mins)': p.completedMinutes,
-    'Remaining (mins)': p.remainingMinutes,
-    completedCount: p.completedCount,
-    totalCount: p.totalCount
-  }));
+    const priorityTimeMap: Record<string, { minutes: number; blockCount: number }> = {
+      urgent: { minutes: 0, blockCount: 0 },
+      important: { minutes: 0, blockCount: 0 },
+      flexible: { minutes: 0, blockCount: 0 },
+      optional: { minutes: 0, blockCount: 0 },
+      fixed: { minutes: 0, blockCount: 0 },
+    };
 
-  // Donut completion chart data
-  const completionDonutData = [
-    { name: 'Completed', value: completedTasks.length, fill: '#10b981' },
-    { name: 'Pending', value: Math.max(0, totalTasks - completedTasks.length), fill: '#e5e7eb' },
-  ];
+    schedule.forEach(block => {
+      const duration = Math.max(0, getBlockDuration(block.start, block.end));
+      const prioKey = block.priority in priorityTimeMap ? block.priority : 'optional';
+      priorityTimeMap[prioKey].minutes += duration;
+      priorityTimeMap[prioKey].blockCount += 1;
+    });
+
+    const totalScheduledMinutes = Object.values(priorityTimeMap).reduce((acc, val) => acc + val.minutes, 0);
+
+    // Data for Priority Distribution Bar Chart & Donut Chart
+    const priorityDistributionData = [
+      {
+        priority: 'urgent' as const,
+        name: 'Urgent',
+        minutes: priorityTimeMap.urgent.minutes,
+        hours: Number((priorityTimeMap.urgent.minutes / 60).toFixed(1)),
+        blocks: priorityTimeMap.urgent.blockCount,
+        color: PRIORITY_CONFIG.urgent.color,
+        fill: PRIORITY_CONFIG.urgent.color
+      },
+      {
+        priority: 'important' as const,
+        name: 'Important',
+        minutes: priorityTimeMap.important.minutes,
+        hours: Number((priorityTimeMap.important.minutes / 60).toFixed(1)),
+        blocks: priorityTimeMap.important.blockCount,
+        color: PRIORITY_CONFIG.important.color,
+        fill: PRIORITY_CONFIG.important.color
+      },
+      {
+        priority: 'flexible' as const,
+        name: 'Flexible',
+        minutes: priorityTimeMap.flexible.minutes,
+        hours: Number((priorityTimeMap.flexible.minutes / 60).toFixed(1)),
+        blocks: priorityTimeMap.flexible.blockCount,
+        color: PRIORITY_CONFIG.flexible.color,
+        fill: PRIORITY_CONFIG.flexible.color
+      },
+      {
+        priority: 'optional' as const,
+        name: 'Optional',
+        minutes: priorityTimeMap.optional.minutes,
+        hours: Number((priorityTimeMap.optional.minutes / 60).toFixed(1)),
+        blocks: priorityTimeMap.optional.blockCount,
+        color: PRIORITY_CONFIG.optional.color,
+        fill: PRIORITY_CONFIG.optional.color
+      },
+      {
+        priority: 'fixed' as const,
+        name: 'Fixed Appts',
+        minutes: priorityTimeMap.fixed.minutes,
+        hours: Number((priorityTimeMap.fixed.minutes / 60).toFixed(1)),
+        blocks: priorityTimeMap.fixed.blockCount,
+        color: PRIORITY_CONFIG.fixed.color,
+        fill: PRIORITY_CONFIG.fixed.color
+      }
+    ].filter(d => d.minutes > 0 || d.blocks > 0);
+
+    // 3. Task Completion by Priority Level
+    const priorityCompletionBreakdown = (['urgent', 'important', 'flexible', 'optional'] as TaskPriority[]).map(prio => {
+      const tasksInPrio = tasks.filter(t => t.priority === prio);
+      const completedInPrio = tasksInPrio.filter(t => t.status === 'completed');
+      const totalMins = tasksInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
+      const doneMins = completedInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
+      return {
+        priority: prio,
+        name: PRIORITY_CONFIG[prio].label,
+        totalCount: tasksInPrio.length,
+        completedCount: completedInPrio.length,
+        pendingCount: tasksInPrio.length - completedInPrio.length,
+        percent: tasksInPrio.length > 0 ? Math.round((completedInPrio.length / tasksInPrio.length) * 100) : 0,
+        totalMinutes: totalMins,
+        completedMinutes: doneMins,
+        remainingMinutes: Math.max(0, totalMins - doneMins),
+        color: PRIORITY_CONFIG[prio].color
+      };
+    }).filter(p => p.totalCount > 0);
+
+    // Progress comparison data for Stacked Bar
+    const taskProgressChartData = priorityCompletionBreakdown.map(p => ({
+      name: p.name,
+      'Completed (mins)': p.completedMinutes,
+      'Remaining (mins)': p.remainingMinutes,
+      completedCount: p.completedCount,
+      totalCount: p.totalCount
+    }));
+
+    // Donut completion chart data
+    const completionDonutData = [
+      { name: 'Completed', value: completedTasks.length, fill: '#10b981' },
+      { name: 'Pending', value: Math.max(0, totalTasks - completedTasks.length), fill: '#e5e7eb' },
+    ];
+
+    return {
+      totalTasks,
+      completedTasks,
+      completionPercentage,
+      completedMinutes,
+      totalEstimatedMinutes,
+      remainingMinutes,
+      minutesPercentage,
+      totalScheduledMinutes,
+      priorityDistributionData,
+      priorityCompletionBreakdown,
+      taskProgressChartData,
+      completionDonutData
+    };
+  }, [tasks, schedule]);
 
   return (
     <div id="daily-analytics-widget" className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs transition-all space-y-5">
@@ -190,7 +223,8 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-distribution"
             onClick={() => setActiveMetricView('distribution')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            aria-label="View priority time distribution"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-stone-500 ${
               activeMetricView === 'distribution' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
@@ -202,7 +236,8 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-progress"
             onClick={() => setActiveMetricView('progress')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            aria-label="View task progress"
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium focus:outline-none focus:ring-2 focus:ring-stone-500 ${
               activeMetricView === 'progress' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
