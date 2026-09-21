@@ -136,7 +136,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-500"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Task</span>
@@ -249,7 +249,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-stone-500 ${
                 filter === tab ? 'bg-stone-200 text-stone-900 font-semibold' : 'text-stone-500 hover:text-stone-800'
               }`}
             >

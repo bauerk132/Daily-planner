@@ -109,7 +109,8 @@ export const FocusCard: React.FC<FocusCardProps> = ({
             <button
               id="focus-timer-toggle-btn"
               onClick={() => setIsRunning(!isRunning)}
-              className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-100 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-stone-700 cursor-pointer"
+              aria-label={isRunning ? "Pause focus timer" : "Start focus timer"}
+              className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-100 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-stone-700 cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-1"
             >
               {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               <span>{isRunning ? 'Pause' : 'Start Focus'}</span>
@@ -123,7 +124,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <button
           id="focus-complete-btn"
           onClick={onComplete}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1"
         >
           <CheckCircle className="w-4 h-4" />
           <span>Mark Complete</span>
@@ -132,7 +133,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <button
           id="focus-skip-btn"
           onClick={onSkip}
-          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-1"
         >
           <SkipForward className="w-3.5 h-3.5" />
           <span>Skip</span>
@@ -141,7 +142,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <button
           id="focus-replan-btn"
           onClick={onReplan}
-          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-500 focus:ring-offset-1"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Replan</span>
