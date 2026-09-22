@@ -24,12 +24,16 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
   const [newRecurrence, setNewRecurrence] = useState<'none' | RecurrenceFrequency>('none');
   const [newDueDate, setNewDueDate] = useState<string>('');
 
-  const filteredTasks = tasks.filter(t => {
-    if (filter === 'pending') return t.status !== 'completed';
-    if (filter === 'completed') return t.status === 'completed';
-    if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-    return true;
-  });
+  // Performance Optimization: Memoize the filtering logic.
+  // This prevents filtering the full task list again on every render (e.g. when typing in the new task form).
+  const filteredTasks = React.useMemo(() => {
+    return tasks.filter(t => {
+      if (filter === 'pending') return t.status !== 'completed';
+      if (filter === 'completed') return t.status === 'completed';
+      if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
+      return true;
+    });
+  }, [tasks, filter]);
 
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {

@@ -58,19 +58,22 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="hidden md:flex items-center gap-1">
                 <button
                   onClick={() => onTimeChange('09:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '09:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  aria-label="Jump to 9 AM"
+                  className={`px-1.5 py-0.5 rounded text-[11px] focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${simulatedTime === '09:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
                 >
                   9 AM
                 </button>
                 <button
                   onClick={() => onTimeChange('12:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '12:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  aria-label="Jump to 12 PM"
+                  className={`px-1.5 py-0.5 rounded text-[11px] focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${simulatedTime === '12:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
                 >
                   12 PM
                 </button>
                 <button
                   onClick={() => onTimeChange('16:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '16:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  aria-label="Jump to 4 PM"
+                  className={`px-1.5 py-0.5 rounded text-[11px] focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${simulatedTime === '16:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
                 >
                   4 PM
                 </button>
@@ -84,7 +87,9 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={energy}
                   onClick={() => onEnergyChange(energy)}
-                  className={`capitalize px-2 py-0.5 rounded text-xs transition-colors ${
+                  aria-label={`Set energy to ${energy}`}
+                  aria-pressed={userEnergy === energy}
+                  className={`capitalize px-2 py-0.5 rounded text-xs transition-colors focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${
                     userEnergy === energy 
                       ? 'bg-white text-stone-900 font-semibold shadow-2xs' 
                       : 'text-stone-500 hover:text-stone-800'
