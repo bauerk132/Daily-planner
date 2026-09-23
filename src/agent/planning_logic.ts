@@ -99,12 +99,23 @@ export function generateDailyPlan(input: PlanningInput): StructuredPlan {
   const conflicts: ScheduleConflict[] = [];
 
   // 1. Detect Calendar Conflicts
-  const sortedEvents = [...events].sort((a, b) => parseHHMM(a.start) - parseHHMM(b.start));
+  // Performance optimization: Pre-compute parsed start/end minutes to avoid repetitive string parsing within the O(N^2) loop
+  const parsedEvents = events.map(e => ({
+    ...e,
+    _startM: parseHHMM(e.start),
+    _endM: parseHHMM(e.end)
+  }));
+  const sortedEvents = parsedEvents.sort((a, b) => a._startM - b._startM);
+
   for (let i = 0; i < sortedEvents.length; i++) {
     for (let j = i + 1; j < sortedEvents.length; j++) {
       const e1 = sortedEvents[i];
       const e2 = sortedEvents[j];
-      if (doIntervalsOverlap(e1.start, e1.end, e2.start, e2.end)) {
+
+      // Performance optimization: array is sorted by start time, so if e2 starts after e1 ends, no further events can overlap e1
+      if (e2._startM >= e1._endM) break;
+
+      if (Math.max(e1._startM, e2._startM) < Math.min(e1._endM, e2._endM)) {
         conflicts.push({
           id: `conflict-${e1.id}-${e2.id}`,
           description: `Conflict: "${e1.title}" (${e1.start}-${e1.end}) overlaps with "${e2.title}" (${e2.start}-${e2.end}).`,
