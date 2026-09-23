@@ -1,0 +1,3 @@
+## 2025-02-21 - Avoiding O(N^2) String Parsing in Daily Planner
+**Learning:** The `generateDailyPlan` logic previously parsed times via `parseHHMM` inside a nested O(N^2) conflict detection loop, drastically inflating execution times (from ~30ms to ~1100ms on 1000 events). Because the events were already sorted chronologically, inner loop iterations could be skipped when non-overlapping windows were reached.
+**Action:** Always pre-compute string-to-number parse results (like time in minutes) before O(N^2) algorithms. Leverage sorted arrays to `break` inner loops early (e.g. `if (e2._startM >= e1._endM) break;`) rather than evaluating all combinations.
