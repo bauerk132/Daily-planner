@@ -65,9 +65,12 @@ async function startServer() {
       if (!cachedPlan) {
         cachedPlan = await agent.plan_day(context);
       }
-      const briefing = await agent.create_morning_briefing(context);
-      const tasks = await tasksAdapter.getTasks();
-      const events = await calendarAdapter.getEvents('', '');
+
+      const [briefing, tasks, events] = await Promise.all([
+        agent.create_morning_briefing(context, cachedPlan),
+        tasksAdapter.getTasks(),
+        calendarAdapter.getEvents('', '')
+      ]);
 
       res.json({
         plan: cachedPlan,

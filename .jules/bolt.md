@@ -1,0 +1,3 @@
+## 2023-10-25 - Parallelize API Data Fetching
+**Learning:** Sequential async calls within data fetching endpoints (e.g. `await agent.create_morning_briefing()`, followed by `await tasksAdapter.getTasks()`, etc.) increase latency unnecessarily. Furthermore, utility functions like `create_morning_briefing` may internally duplicate work (like calling `plan_day`) if state isn't explicitly passed down.
+**Action:** Use `Promise.all()` to execute independent async requests concurrently. Refactor helper functions to accept cached artifacts (like `cachedPlan`) as optional parameters to avoid duplicate expensive operations.

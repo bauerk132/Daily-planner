@@ -93,13 +93,15 @@ export class LifeOpsPlannerAgent {
   /**
    * Primary interface: Create Morning Briefing
    */
-  async create_morning_briefing(context: AgentContext): Promise<MorningBriefing> {
+  async create_morning_briefing(context: AgentContext, cachedPlan?: StructuredPlan): Promise<MorningBriefing> {
     const today = new Date().toISOString().split('T')[0];
-    const events = await this.calendar.getEvents(today, today);
-    const tasks = await this.tasks.getTasks(today);
-    const overdue = await this.tasks.getOverdueTasks();
 
-    const plan = await this.plan_day(context);
+    const [events, tasks, overdue, plan] = await Promise.all([
+      this.calendar.getEvents(today, today),
+      this.tasks.getTasks(today),
+      this.tasks.getOverdueTasks(),
+      cachedPlan ? Promise.resolve(cachedPlan) : this.plan_day(context)
+    ]);
 
     const greeting = 'Good morning! Here is your clear, calm game plan for today.';
     const calSummary = events.length > 0 
