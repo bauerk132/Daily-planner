@@ -2,7 +2,7 @@
  * LifeOps Daily Planner - Web Application Interface
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './ui/Header.tsx';
 import { FocusCard } from './ui/FocusCard.tsx';
 import { Timeline } from './ui/Timeline.tsx';
@@ -66,7 +66,8 @@ export default function App() {
   }, []);
 
   // Time change
-  const handleTimeChange = async (newTime: string) => {
+  // Wrapped in useCallback to prevent re-recreation of the function on every render, preventing unnecessary re-renders of the Header component.
+  const handleTimeChange = useCallback(async (newTime: string) => {
     setSimulatedTime(newTime);
     setIsReplanning(true);
     try {
@@ -84,10 +85,11 @@ export default function App() {
     } finally {
       setIsReplanning(false);
     }
-  };
+  }, [userEnergy]);
 
   // Energy change
-  const handleEnergyChange = async (newEnergy: 'low' | 'medium' | 'high') => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of the Header component.
+  const handleEnergyChange = useCallback(async (newEnergy: 'low' | 'medium' | 'high') => {
     setUserEnergy(newEnergy);
     setIsReplanning(true);
     try {
@@ -105,10 +107,11 @@ export default function App() {
     } finally {
       setIsReplanning(false);
     }
-  };
+  }, [simulatedTime]);
 
   // 1-Click Replan
-  const handleReplan = async () => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of Header and FocusCard components.
+  const handleReplan = useCallback(async () => {
     setIsReplanning(true);
     try {
       const res = await fetch('/api/replan', {
@@ -125,10 +128,11 @@ export default function App() {
     } finally {
       setIsReplanning(false);
     }
-  };
+  }, [simulatedTime, userEnergy]);
 
   // Conversational chat
-  const handleSendMessage = async (text: string) => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of child components.
+  const handleSendMessage = useCallback(async (text: string) => {
     setIsChatLoading(true);
     // Optimistically add user message
     const tempUserMsg: ChatMessage = {
@@ -163,10 +167,11 @@ export default function App() {
     } finally {
       setIsChatLoading(false);
     }
-  };
+  }, []);
 
   // Complete task
-  const handleCompleteTask = async (taskId: string) => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of Timeline and TaskBacklog.
+  const handleCompleteTask = useCallback(async (taskId: string) => {
     try {
       const res = await fetch(`/api/tasks/${taskId}/complete`, { method: 'POST' });
       if (res.ok) {
@@ -177,24 +182,27 @@ export default function App() {
     } catch (err) {
       console.error('Failed to complete task:', err);
     }
-  };
+  }, []);
 
   // Complete current focus task
-  const handleCompleteFocus = () => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of FocusCard.
+  const handleCompleteFocus = useCallback(() => {
     if (plan?.next_action.task_id) {
       handleCompleteTask(plan.next_action.task_id);
     } else {
       handleReplan();
     }
-  };
+  }, [plan?.next_action.task_id, handleCompleteTask, handleReplan]);
 
   // Skip focus task
-  const handleSkipFocus = () => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of FocusCard.
+  const handleSkipFocus = useCallback(() => {
     handleReplan();
-  };
+  }, [handleReplan]);
 
   // Add new task
-  const handleAddTask = async (taskData: Omit<Task, 'id' | 'status'>) => {
+  // Wrapped in useCallback to prevent unnecessary re-renders of TaskBacklog.
+  const handleAddTask = useCallback(async (taskData: Omit<Task, 'id' | 'status'>) => {
     try {
       const res = await fetch('/api/tasks', {
         method: 'POST',
@@ -209,7 +217,7 @@ export default function App() {
     } catch (err) {
       console.error('Failed to add task:', err);
     }
-  };
+  }, []);
 
   if (isLoadingInitial) {
     return (
