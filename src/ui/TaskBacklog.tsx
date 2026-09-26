@@ -24,12 +24,23 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
   const [newRecurrence, setNewRecurrence] = useState<'none' | RecurrenceFrequency>('none');
   const [newDueDate, setNewDueDate] = useState<string>('');
 
-  const filteredTasks = tasks.filter(t => {
-    if (filter === 'pending') return t.status !== 'completed';
-    if (filter === 'completed') return t.status === 'completed';
-    if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-    return true;
-  });
+  const tabCounts = React.useMemo(() => {
+    return {
+      all: tasks.length,
+      pending: tasks.filter(t => t.status !== 'completed').length,
+      completed: tasks.filter(t => t.status === 'completed').length,
+      recurring: tasks.filter(t => Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'))).length
+    };
+  }, [tasks]);
+
+  const filteredTasks = React.useMemo(() => {
+    return tasks.filter(t => {
+      if (filter === 'pending') return t.status !== 'completed';
+      if (filter === 'completed') return t.status === 'completed';
+      if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
+      return true;
+    });
+  }, [tasks, filter]);
 
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
@@ -115,7 +126,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  const recurringCount = tabCounts.recurring;
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
@@ -236,20 +247,17 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       )}
 
       {/* Filter Tabs */}
-      <div className="flex items-center gap-2 my-3 text-xs flex-wrap">
+      <div className="flex items-center gap-2 my-3 text-xs flex-wrap" role="tablist">
         {(['pending', 'recurring', 'completed', 'all'] as const).map((tab) => {
-          const count = tasks.filter(t => {
-            if (tab === 'all') return true;
-            if (tab === 'completed') return t.status === 'completed';
-            if (tab === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-            return t.status !== 'completed';
-          }).length;
+          const count = tabCounts[tab];
 
           return (
             <button
               key={tab}
+              role="tab"
+              aria-selected={filter === tab}
               onClick={() => setFilter(tab)}
-              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-500 ${
                 filter === tab ? 'bg-stone-200 text-stone-900 font-semibold' : 'text-stone-500 hover:text-stone-800'
               }`}
             >

@@ -25,17 +25,23 @@ export const FocusCard: React.FC<FocusCardProps> = ({
     setIsRunning(false);
   }, [nextAction.title, nextAction.duration_minutes]);
 
+  // PERFORMANCE OPTIMIZATION: Avoid clearing and resetting setInterval on every second change
+  // by using a functional state update and removing `secondsRemaining` from dependency array
   useEffect(() => {
     let interval: any = null;
-    if (isRunning && secondsRemaining > 0) {
+    if (isRunning) {
       interval = setInterval(() => {
-        setSecondsRemaining(prev => prev - 1);
+        setSecondsRemaining(prev => {
+          if (prev <= 1) {
+            setIsRunning(false);
+            return 0;
+          }
+          return prev - 1;
+        });
       }, 1000);
-    } else if (secondsRemaining <= 0) {
-      setIsRunning(false);
     }
     return () => clearInterval(interval);
-  }, [isRunning, secondsRemaining]);
+  }, [isRunning]);
 
   const formatTimer = (totalSecs: number) => {
     const mins = Math.floor(totalSecs / 60);
