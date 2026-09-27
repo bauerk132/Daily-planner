@@ -101,7 +101,8 @@ export const ProjectBreakdownView: React.FC<ProjectBreakdownViewProps> = ({
           <button
             type="submit"
             disabled={isLoading || !projectInput.trim()}
-            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none"
+            aria-label="Generate Project Breakdown"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>{isLoading ? 'Deconstructing...' : 'Break Down'}</span>
@@ -126,7 +127,7 @@ export const ProjectBreakdownView: React.FC<ProjectBreakdownViewProps> = ({
               {onAddTasksToBacklog && (
                 <button
                   onClick={handleSendToQueue}
-                  className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                  className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
                 >
                   Import Subtasks to Backlog
                 </button>

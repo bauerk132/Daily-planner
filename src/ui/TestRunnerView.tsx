@@ -51,7 +51,8 @@ export const TestRunnerView: React.FC<TestRunnerViewProps> = ({ initialResults }
           <button
             onClick={handleRunTests}
             disabled={isRunning}
-            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none"
+            aria-label="Run automated tests"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRunning ? 'animate-spin' : ''}`} />
             <span>{isRunning ? 'Running 10 Tests...' : 'Run All Tests'}</span>

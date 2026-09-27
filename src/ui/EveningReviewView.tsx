@@ -108,7 +108,8 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
             <span className="text-xs text-stone-500">Rest well. Tomorrow will start with a fresh calm plan.</span>
             <button
               onClick={handleFinishReview}
-              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none"
+              aria-label={prepared ? 'Tomorrow Prepared' : 'Lock in Tomorrow Schedule'}
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{prepared ? 'Tomorrow Prepared ✓' : 'Lock in Tomorrow Schedule'}</span>

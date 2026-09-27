@@ -27,8 +27,9 @@ export const MorningBriefingCard: React.FC<MorningBriefingCardProps> = ({
         </div>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-stone-400 hover:text-stone-600 p-1 rounded-md hover:bg-stone-100 transition-colors"
+          className="text-stone-400 hover:text-stone-600 p-1 rounded-md hover:bg-stone-100 transition-colors focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none"
           title={isExpanded ? 'Collapse' : 'Expand'}
+          aria-label={isExpanded ? 'Collapse Briefing' : 'Expand Briefing'}
         >
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
@@ -109,7 +110,7 @@ export const MorningBriefingCard: React.FC<MorningBriefingCardProps> = ({
             {onSelectAction && (
               <button
                 onClick={() => onSelectAction(briefing.recommended_first_action.title)}
-                className="flex items-center gap-1 text-[11px] font-semibold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-md transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-[11px] font-semibold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:outline-none"
               >
                 <span>Start Now</span>
                 <ArrowRight className="w-3 h-3" />
