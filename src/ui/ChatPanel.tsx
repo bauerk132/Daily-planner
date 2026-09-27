@@ -59,7 +59,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           <button
             key={idx}
             onClick={() => onSendMessage(p)}
-            className="px-2 py-0.5 rounded-full bg-white hover:bg-stone-200 border border-stone-200 text-stone-600 whitespace-nowrap transition-colors cursor-pointer shrink-0"
+            className="px-2 py-0.5 rounded-full bg-white hover:bg-stone-200 border border-stone-200 text-stone-600 whitespace-nowrap transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none"
           >
             "{p.length > 32 ? p.slice(0, 30) + '...' : p}"
           </button>
@@ -125,7 +125,8 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <button
           type="submit"
           disabled={!inputText.trim() || isLoading}
-          className="p-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-white transition-colors disabled:opacity-40 cursor-pointer"
+          className="p-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-white transition-colors disabled:opacity-40 cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none"
+          aria-label="Send message"
         >
           <Send className="w-4 h-4" />
         </button>

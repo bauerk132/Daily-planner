@@ -2,7 +2,7 @@
  * LifeOps Daily Planner - Web Application Interface
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Header } from './ui/Header.tsx';
 import { FocusCard } from './ui/FocusCard.tsx';
 import { Timeline } from './ui/Timeline.tsx';
@@ -66,7 +66,7 @@ export default function App() {
   }, []);
 
   // Time change
-  const handleTimeChange = async (newTime: string) => {
+  const handleTimeChange = useCallback(async (newTime: string) => {
     setSimulatedTime(newTime);
     setIsReplanning(true);
     try {
@@ -84,10 +84,10 @@ export default function App() {
     } finally {
       setIsReplanning(false);
     }
-  };
+  }, [userEnergy]);
 
   // Energy change
-  const handleEnergyChange = async (newEnergy: 'low' | 'medium' | 'high') => {
+  const handleEnergyChange = useCallback(async (newEnergy: 'low' | 'medium' | 'high') => {
     setUserEnergy(newEnergy);
     setIsReplanning(true);
     try {
@@ -105,10 +105,10 @@ export default function App() {
     } finally {
       setIsReplanning(false);
     }
-  };
+  }, [simulatedTime]);
 
   // 1-Click Replan
-  const handleReplan = async () => {
+  const handleReplan = useCallback(async () => {
     setIsReplanning(true);
     try {
       const res = await fetch('/api/replan', {
@@ -125,7 +125,7 @@ export default function App() {
     } finally {
       setIsReplanning(false);
     }
-  };
+  }, [simulatedTime, userEnergy]);
 
   // Conversational chat
   const handleSendMessage = async (text: string) => {

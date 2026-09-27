@@ -190,11 +190,12 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-distribution"
             onClick={() => setActiveMetricView('distribution')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${
               activeMetricView === 'distribution' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
             }`}
+            aria-label="Toggle distribution view"
           >
             <PieChartIcon className="w-3 h-3" />
             <span>Priority Time</span>
@@ -202,11 +203,12 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-progress"
             onClick={() => setActiveMetricView('progress')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:outline-none ${
               activeMetricView === 'progress' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
             }`}
+            aria-label="Toggle progress view"
           >
             <BarChart3 className="w-3 h-3" />
             <span>Task Progress</span>
