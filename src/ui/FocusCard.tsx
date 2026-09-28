@@ -25,16 +25,23 @@ export const FocusCard: React.FC<FocusCardProps> = ({
     setIsRunning(false);
   }, [nextAction.title, nextAction.duration_minutes]);
 
+  // PERFORMANCE OPTIMIZATION:
+  // Timer interval cleanly mounts/unmounts to prevent memory leaks and unnecessary rerenders.
+  // It only sets up the interval when isRunning is true and secondsRemaining > 0.
+  // It clears the interval immediately upon unmount or when dependencies change.
   useEffect(() => {
-    let interval: any = null;
+    let interval: ReturnType<typeof setInterval> | null = null;
     if (isRunning && secondsRemaining > 0) {
       interval = setInterval(() => {
-        setSecondsRemaining(prev => prev - 1);
+        setSecondsRemaining(prev => (prev <= 1 ? 0 : prev - 1));
       }, 1000);
-    } else if (secondsRemaining <= 0) {
+    } else if (secondsRemaining <= 0 && isRunning) {
       setIsRunning(false);
     }
-    return () => clearInterval(interval);
+
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isRunning, secondsRemaining]);
 
   const formatTimer = (totalSecs: number) => {
