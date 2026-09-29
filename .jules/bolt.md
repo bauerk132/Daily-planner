@@ -1,0 +1,3 @@
+## 2024-05-18 - Heavy Data Aggregations in React Renders
+**Learning:** The `DailyAnalytics` and `TaskBacklog` components were iterating and reducing the full tasks list multiple times per render (calculating total tasks, filtered lists, priority distributions, and stacked bar data). This leads to sluggish typing in the chat panel and input forms as the task backlog grows, because every keystroke triggers top-down app re-renders.
+**Action:** Always wrap `O(N)` or worse operations (filters, sorts, aggregations for charts) derived from large arrays (like task queues) in `useMemo` hooks. Only depend on the raw data array and filter primitives, returning compound calculated states.
