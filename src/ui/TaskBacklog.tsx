@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, TaskPriority, TaskCategory, RecurrenceRule, RecurrenceFrequency } from '../models/types.ts';
 import { CheckSquare, Plus, Clock, AlertCircle, Shield, Briefcase, GraduationCap, FileText, Repeat, Calendar } from 'lucide-react';
 
@@ -24,12 +24,14 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
   const [newRecurrence, setNewRecurrence] = useState<'none' | RecurrenceFrequency>('none');
   const [newDueDate, setNewDueDate] = useState<string>('');
 
-  const filteredTasks = tasks.filter(t => {
-    if (filter === 'pending') return t.status !== 'completed';
-    if (filter === 'completed') return t.status === 'completed';
-    if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-    return true;
-  });
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      if (filter === 'pending') return t.status !== 'completed';
+      if (filter === 'completed') return t.status === 'completed';
+      if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
+      return true;
+    });
+  }, [tasks, filter]);
 
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
@@ -115,7 +117,9 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  const recurringCount = useMemo(() => {
+    return tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  }, [tasks]);
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
@@ -136,9 +140,10 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-stone-900 outline-none"
+          aria-expanded={isAdding}
         >
-          <Plus className="w-3.5 h-3.5" />
+          <Plus className="w-3.5 h-3.5" aria-hidden="true" />
           <span>Add Task</span>
         </button>
       </div>
@@ -282,7 +287,8 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
                     type="checkbox"
                     checked={isDone}
                     onChange={() => onCompleteTask(t.id)}
-                    className="rounded border-stone-300 text-stone-900 focus:ring-stone-900 w-4 h-4 cursor-pointer shrink-0"
+                    className="rounded border-stone-300 text-stone-900 focus-visible:ring-2 focus-visible:ring-stone-900 focus:ring-stone-900 w-4 h-4 cursor-pointer shrink-0 outline-none"
+                    aria-label={`Mark task ${t.title} as complete`}
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
