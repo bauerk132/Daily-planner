@@ -125,6 +125,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
         <button
           type="submit"
           disabled={!inputText.trim() || isLoading}
+          aria-label="Send message"
           className="p-2 rounded-lg bg-stone-900 hover:bg-stone-800 text-white transition-colors disabled:opacity-40 cursor-pointer"
         >
           <Send className="w-4 h-4" />

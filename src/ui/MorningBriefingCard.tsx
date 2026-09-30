@@ -29,6 +29,7 @@ export const MorningBriefingCard: React.FC<MorningBriefingCardProps> = ({
           onClick={() => setIsExpanded(!isExpanded)}
           className="text-stone-400 hover:text-stone-600 p-1 rounded-md hover:bg-stone-100 transition-colors"
           title={isExpanded ? 'Collapse' : 'Expand'}
+          aria-label={isExpanded ? 'Collapse' : 'Expand'}
         >
           {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
