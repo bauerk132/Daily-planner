@@ -135,6 +135,7 @@ export const Timeline: React.FC<TimelineProps> = ({
                           onClick={() => onCompleteBlock(block)}
                           className="p-1 rounded text-stone-400 hover:text-emerald-600 hover:bg-emerald-50 transition-colors"
                           title="Mark task completed"
+                          aria-label="Mark task completed"
                         >
                           <Check className="w-4 h-4" />
                         </button>
