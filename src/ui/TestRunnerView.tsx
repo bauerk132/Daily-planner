@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TestCaseResult } from '../tests/agent_tests.ts';
 import { CheckCircle2, XCircle, Play, RefreshCw, ShieldCheck, Cpu } from 'lucide-react';
 
@@ -25,7 +25,8 @@ export const TestRunnerView: React.FC<TestRunnerViewProps> = ({ initialResults }
     }
   };
 
-  const passedCount = results.filter(r => r.passed).length;
+  // Memoize O(N) operations to prevent re-render slowdowns with large arrays
+  const passedCount = useMemo(() => results.filter(r => r.passed).length, [results]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
