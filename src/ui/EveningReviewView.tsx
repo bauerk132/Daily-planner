@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task } from '../models/types.ts';
 import { Moon, CheckCircle, ArrowRight, Calendar, Sparkles } from 'lucide-react';
 
@@ -13,8 +13,13 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
   onCompleteTask,
   onPrepareTomorrow
 }) => {
-  const completedTasks = tasks.filter(t => t.status === 'completed');
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
+  // Memoize O(N) operations to prevent re-render slowdowns with large arrays
+  const { completedTasks, pendingTasks } = useMemo(() => {
+    return {
+      completedTasks: tasks.filter(t => t.status === 'completed'),
+      pendingTasks: tasks.filter(t => t.status !== 'completed')
+    };
+  }, [tasks]);
 
   const [reflection, setReflection] = useState<string>('Made solid progress on high-leverage obligations today.');
   const [tomorrowFocus, setTomorrowFocus] = useState<string>('Review practice exam mistakes and follow up with assistance office.');
