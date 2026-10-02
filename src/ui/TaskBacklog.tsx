@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, TaskPriority, TaskCategory, RecurrenceRule, RecurrenceFrequency } from '../models/types.ts';
 import { CheckSquare, Plus, Clock, AlertCircle, Shield, Briefcase, GraduationCap, FileText, Repeat, Calendar } from 'lucide-react';
 
@@ -24,12 +24,13 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
   const [newRecurrence, setNewRecurrence] = useState<'none' | RecurrenceFrequency>('none');
   const [newDueDate, setNewDueDate] = useState<string>('');
 
-  const filteredTasks = tasks.filter(t => {
+  // Optimization: wrap O(N) array filter operations in useMemo to prevent application-wide re-render slowdowns
+  const filteredTasks = useMemo(() => tasks.filter(t => {
     if (filter === 'pending') return t.status !== 'completed';
     if (filter === 'completed') return t.status === 'completed';
     if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
     return true;
-  });
+  }), [tasks, filter]);
 
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
@@ -115,7 +116,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  const recurringCount = useMemo(() => tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length, [tasks]);
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
@@ -238,6 +239,9 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 my-3 text-xs flex-wrap">
         {(['pending', 'recurring', 'completed', 'all'] as const).map((tab) => {
+          // This mapping is relatively light, but the filter inside can be intensive
+          // A full refactor to precalculate these counts once would be better, but we
+          // keep the map inline for now based on the prompt scope.
           const count = tasks.filter(t => {
             if (tab === 'all') return true;
             if (tab === 'completed') return t.status === 'completed';
