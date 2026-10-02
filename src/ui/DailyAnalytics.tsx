@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, DailyPlanBlock, TaskPriority } from '../models/types.ts';
 import { 
   BarChart, 
@@ -46,15 +46,16 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
 }) => {
   const [activeMetricView, setActiveMetricView] = useState<'distribution' | 'progress'>('distribution');
 
+  // Optimization: wrap O(N) array filter/reduce operations in useMemo to prevent application-wide re-render slowdowns
   // 1. Task Completion Metrics
   const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === 'completed');
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
+  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed'), [tasks]);
+  const pendingTasks = useMemo(() => tasks.filter(t => t.status !== 'completed'), [tasks]);
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
   // Total estimated minutes completed vs remaining
-  const completedMinutes = completedTasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
-  const totalEstimatedMinutes = tasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
+  const completedMinutes = useMemo(() => completedTasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0), [completedTasks]);
+  const totalEstimatedMinutes = useMemo(() => tasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0), [tasks]);
   const remainingMinutes = Math.max(0, totalEstimatedMinutes - completedMinutes);
   const minutesPercentage = totalEstimatedMinutes > 0 
     ? Math.round((completedMinutes / totalEstimatedMinutes) * 100) 
@@ -68,25 +69,28 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
     return (eH * 60 + eM) - (sH * 60 + sM);
   };
 
-  const priorityTimeMap: Record<string, { minutes: number; blockCount: number }> = {
-    urgent: { minutes: 0, blockCount: 0 },
-    important: { minutes: 0, blockCount: 0 },
-    flexible: { minutes: 0, blockCount: 0 },
-    optional: { minutes: 0, blockCount: 0 },
-    fixed: { minutes: 0, blockCount: 0 },
-  };
+  const priorityTimeMap = useMemo(() => {
+    const map: Record<string, { minutes: number; blockCount: number }> = {
+      urgent: { minutes: 0, blockCount: 0 },
+      important: { minutes: 0, blockCount: 0 },
+      flexible: { minutes: 0, blockCount: 0 },
+      optional: { minutes: 0, blockCount: 0 },
+      fixed: { minutes: 0, blockCount: 0 },
+    };
 
-  schedule.forEach(block => {
-    const duration = Math.max(0, getBlockDuration(block.start, block.end));
-    const prioKey = block.priority in priorityTimeMap ? block.priority : 'optional';
-    priorityTimeMap[prioKey].minutes += duration;
-    priorityTimeMap[prioKey].blockCount += 1;
-  });
+    schedule.forEach(block => {
+      const duration = Math.max(0, getBlockDuration(block.start, block.end));
+      const prioKey = block.priority in map ? block.priority : 'optional';
+      map[prioKey].minutes += duration;
+      map[prioKey].blockCount += 1;
+    });
+    return map;
+  }, [schedule]);
 
-  const totalScheduledMinutes = Object.values(priorityTimeMap).reduce((acc, val) => acc + val.minutes, 0);
+  const totalScheduledMinutes = useMemo(() => Object.values(priorityTimeMap).reduce((acc, val: any) => acc + val.minutes, 0), [priorityTimeMap]);
 
   // Data for Priority Distribution Bar Chart & Donut Chart
-  const priorityDistributionData = [
+  const priorityDistributionData = useMemo(() => [
     {
       priority: 'urgent' as const,
       name: 'Urgent',
@@ -132,10 +136,10 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
       color: PRIORITY_CONFIG.fixed.color,
       fill: PRIORITY_CONFIG.fixed.color
     }
-  ].filter(d => d.minutes > 0 || d.blocks > 0);
+  ].filter(d => d.minutes > 0 || d.blocks > 0), [priorityTimeMap]);
 
   // 3. Task Completion by Priority Level
-  const priorityCompletionBreakdown = (['urgent', 'important', 'flexible', 'optional'] as TaskPriority[]).map(prio => {
+  const priorityCompletionBreakdown = useMemo(() => (['urgent', 'important', 'flexible', 'optional'] as TaskPriority[]).map(prio => {
     const tasksInPrio = tasks.filter(t => t.priority === prio);
     const completedInPrio = tasksInPrio.filter(t => t.status === 'completed');
     const totalMins = tasksInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
@@ -152,22 +156,22 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
       remainingMinutes: Math.max(0, totalMins - doneMins),
       color: PRIORITY_CONFIG[prio].color
     };
-  }).filter(p => p.totalCount > 0);
+  }).filter(p => p.totalCount > 0), [tasks]);
 
   // Progress comparison data for Stacked Bar
-  const taskProgressChartData = priorityCompletionBreakdown.map(p => ({
+  const taskProgressChartData = useMemo(() => priorityCompletionBreakdown.map(p => ({
     name: p.name,
     'Completed (mins)': p.completedMinutes,
     'Remaining (mins)': p.remainingMinutes,
     completedCount: p.completedCount,
     totalCount: p.totalCount
-  }));
+  })), [priorityCompletionBreakdown]);
 
   // Donut completion chart data
-  const completionDonutData = [
+  const completionDonutData = useMemo(() => [
     { name: 'Completed', value: completedTasks.length, fill: '#10b981' },
     { name: 'Pending', value: Math.max(0, totalTasks - completedTasks.length), fill: '#e5e7eb' },
-  ];
+  ], [completedTasks.length, totalTasks]);
 
   return (
     <div id="daily-analytics-widget" className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs transition-all space-y-5">
