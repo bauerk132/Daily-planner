@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task } from '../models/types.ts';
 import { Moon, CheckCircle, ArrowRight, Calendar, Sparkles } from 'lucide-react';
 

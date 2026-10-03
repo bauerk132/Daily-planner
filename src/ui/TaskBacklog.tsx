@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task, TaskPriority, TaskCategory, RecurrenceRule, RecurrenceFrequency } from '../models/types.ts';
 import { CheckSquare, Plus, Clock, AlertCircle, Shield, Briefcase, GraduationCap, FileText, Repeat, Calendar } from 'lucide-react';
 
@@ -24,12 +24,15 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
   const [newRecurrence, setNewRecurrence] = useState<'none' | RecurrenceFrequency>('none');
   const [newDueDate, setNewDueDate] = useState<string>('');
 
-  const filteredTasks = tasks.filter(t => {
-    if (filter === 'pending') return t.status !== 'completed';
-    if (filter === 'completed') return t.status === 'completed';
-    if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-    return true;
-  });
+  // Performance optimization: wrap O(N) array transformations in useMemo to prevent application-wide slowdowns
+  const filteredTasks = useMemo(() => {
+    return tasks.filter(t => {
+      if (filter === 'pending') return t.status !== 'completed';
+      if (filter === 'completed') return t.status === 'completed';
+      if (filter === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
+      return true;
+    });
+  }, [tasks, filter]);
 
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
@@ -115,7 +118,10 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  // Performance optimization: compute recurringCount only when tasks change
+  const recurringCount = useMemo(() => {
+    return tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  }, [tasks]);
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
