@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { TestCaseResult } from '../tests/agent_tests.ts';
 import { CheckCircle2, XCircle, Play, RefreshCw, ShieldCheck, Cpu } from 'lucide-react';
 
