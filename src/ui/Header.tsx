@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="replan-btn-header"
               onClick={onReplan}
               disabled={isReplanning}
-              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isReplanning ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Replan Remainder</span>
@@ -122,7 +122,7 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`px-3 py-1 rounded-md whitespace-nowrap transition-colors cursor-pointer ${
+              className={`px-3 py-1 rounded-md whitespace-nowrap transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
                 activeTab === tab.id
                   ? 'bg-stone-900 text-white font-medium'
                   : 'hover:bg-stone-100 text-stone-600'
