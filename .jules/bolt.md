@@ -1,3 +1,3 @@
 ## 2025-03-04 - React Performance: Memoizing O(N) Array Operations
-**Learning:** In React applications, especially those dealing with frequent state updates (like a ticking clock or live schedule), recalculating derived state (filtering, sorting, aggregation) from large arrays on every render can cause significant performance bottlenecks and application-wide slowdowns.
-**Action:** Always wrap O(N) or worse operations derived from large arrays (e.g., `tasks.filter(...)`, `schedule.reduce(...)`) in `useMemo` hooks to ensure these expensive calculations are only re-run when their specific dependencies (`tasks`, `schedule`) change, not on every component re-render.
+**Learning:** Found that non-memoized array filtering operations in components like `EveningReviewView`, `TestRunnerView`, and `TaskBacklog` can cause significant UI re-render slowdowns across the application when tasks are updated.
+**Action:** Always wrap O(N) or worse operations derived from large arrays in `useMemo` hooks (e.g. `const completedTasks = useMemo(() => tasks.filter(...), [tasks])`).
