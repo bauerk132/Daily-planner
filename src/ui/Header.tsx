@@ -54,6 +54,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onChange={(e) => onTimeChange(e.target.value)}
                 className="bg-white px-2 py-0.5 rounded text-stone-800 font-mono text-xs border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-400"
                 title="Current time in LifeOps"
+                aria-label="Current time in LifeOps"
               />
               <div className="hidden md:flex items-center gap-1">
                 <button
