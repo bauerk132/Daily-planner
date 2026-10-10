@@ -284,6 +284,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
                     checked={isDone}
                     onChange={() => onCompleteTask(t.id)}
                     className="rounded border-stone-300 text-stone-900 focus:ring-stone-900 w-4 h-4 cursor-pointer shrink-0"
+                    aria-label={`Mark task ${t.title} as ${isDone ? 'incomplete' : 'complete'}`}
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
