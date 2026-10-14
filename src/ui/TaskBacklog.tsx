@@ -116,7 +116,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  const recurringCount = useMemo(() => tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length, [tasks]);
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
