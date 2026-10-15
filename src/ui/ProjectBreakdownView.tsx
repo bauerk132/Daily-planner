@@ -96,12 +96,12 @@ export const ProjectBreakdownView: React.FC<ProjectBreakdownViewProps> = ({
             value={projectInput}
             onChange={(e) => setProjectInput(e.target.value)}
             placeholder="e.g. Move to a new apartment, Study for Biology final, or Update Portfolio"
-            className="flex-1 text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-200 focus:outline-none focus:ring-1 focus:ring-stone-900 focus:bg-white font-medium"
+            className="flex-1 text-xs px-3 py-2 rounded-lg bg-stone-50 border border-stone-200 focus:outline-none focus:ring-1 focus:ring-stone-900 focus:bg-white font-medium focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
           />
           <button
             type="submit"
             disabled={isLoading || !projectInput.trim()}
-            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer"
+            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
           >
             <Sparkles className="w-3.5 h-3.5" />
             <span>{isLoading ? 'Deconstructing...' : 'Break Down'}</span>
@@ -126,7 +126,7 @@ export const ProjectBreakdownView: React.FC<ProjectBreakdownViewProps> = ({
               {onAddTasksToBacklog && (
                 <button
                   onClick={handleSendToQueue}
-                  className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg transition-colors cursor-pointer"
+                  className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
                 >
                   Import Subtasks to Backlog
                 </button>
