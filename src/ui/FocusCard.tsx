@@ -109,7 +109,8 @@ export const FocusCard: React.FC<FocusCardProps> = ({
             <button
               id="focus-timer-toggle-btn"
               onClick={() => setIsRunning(!isRunning)}
-              className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-100 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-stone-700 cursor-pointer"
+              className="flex items-center gap-2 bg-stone-800 hover:bg-stone-700 text-stone-100 text-xs font-medium px-4 py-2 rounded-lg transition-colors border border-stone-700 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
+              aria-label={isRunning ? "Pause timer" : "Start focus timer"}
             >
               {isRunning ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               <span>{isRunning ? 'Pause' : 'Start Focus'}</span>
