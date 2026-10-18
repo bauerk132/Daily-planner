@@ -116,7 +116,20 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  // Memoized to prevent O(N) recalculations on every render
+  const recurringCount = useMemo(() =>
+    tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length,
+  [tasks]);
+
+  // Pre-calculate tab counts to avoid O(N) operations inside the map loop during render
+  const tabCounts = useMemo(() => {
+    return {
+      pending: tasks.filter(t => t.status !== 'completed').length,
+      recurring: tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length,
+      completed: tasks.filter(t => t.status === 'completed').length,
+      all: tasks.length
+    };
+  }, [tasks]);
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
@@ -239,12 +252,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 my-3 text-xs flex-wrap">
         {(['pending', 'recurring', 'completed', 'all'] as const).map((tab) => {
-          const count = tasks.filter(t => {
-            if (tab === 'all') return true;
-            if (tab === 'completed') return t.status === 'completed';
-            if (tab === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-            return t.status !== 'completed';
-          }).length;
+          const count = tabCounts[tab];
 
           return (
             <button

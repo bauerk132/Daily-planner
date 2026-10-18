@@ -58,19 +58,22 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="hidden md:flex items-center gap-1">
                 <button
                   onClick={() => onTimeChange('09:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '09:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  className={`px-1.5 py-0.5 rounded text-[11px] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${simulatedTime === '09:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  aria-label="Set time to 9 AM"
                 >
                   9 AM
                 </button>
                 <button
                   onClick={() => onTimeChange('12:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '12:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  className={`px-1.5 py-0.5 rounded text-[11px] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${simulatedTime === '12:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  aria-label="Set time to 12 PM"
                 >
                   12 PM
                 </button>
                 <button
                   onClick={() => onTimeChange('16:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '16:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  className={`px-1.5 py-0.5 rounded text-[11px] focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${simulatedTime === '16:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  aria-label="Set time to 4 PM"
                 >
                   4 PM
                 </button>
@@ -84,11 +87,12 @@ export const Header: React.FC<HeaderProps> = ({
                 <button
                   key={energy}
                   onClick={() => onEnergyChange(energy)}
-                  className={`capitalize px-2 py-0.5 rounded text-xs transition-colors ${
+                  className={`capitalize px-2 py-0.5 rounded text-xs transition-colors focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
                     userEnergy === energy 
                       ? 'bg-white text-stone-900 font-semibold shadow-2xs' 
                       : 'text-stone-500 hover:text-stone-800'
                   }`}
+                  aria-label={`Set energy to ${energy}`}
                 >
                   {energy}
                 </button>
@@ -100,7 +104,8 @@ export const Header: React.FC<HeaderProps> = ({
               id="replan-btn-header"
               onClick={onReplan}
               disabled={isReplanning}
-              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
+              aria-label="Replan schedule"
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isReplanning ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Replan Remainder</span>
@@ -122,11 +127,12 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`px-3 py-1 rounded-md whitespace-nowrap transition-colors cursor-pointer ${
+              className={`px-3 py-1 rounded-md whitespace-nowrap transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
                 activeTab === tab.id
                   ? 'bg-stone-900 text-white font-medium'
                   : 'hover:bg-stone-100 text-stone-600'
               }`}
+              aria-label={`Switch to ${tab.label}`}
             >
               {tab.label}
             </button>
