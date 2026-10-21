@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task } from '../models/types.ts';
 import { Moon, CheckCircle, ArrowRight, Calendar, Sparkles } from 'lucide-react';
 
@@ -13,8 +13,9 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
   onCompleteTask,
   onPrepareTomorrow
 }) => {
-  const completedTasks = tasks.filter(t => t.status === 'completed');
-  const pendingTasks = tasks.filter(t => t.status !== 'completed');
+  // Use useMemo to avoid O(N) operations on every render
+  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed'), [tasks]);
+  const pendingTasks = useMemo(() => tasks.filter(t => t.status !== 'completed'), [tasks]);
 
   const [reflection, setReflection] = useState<string>('Made solid progress on high-leverage obligations today.');
   const [tomorrowFocus, setTomorrowFocus] = useState<string>('Review practice exam mistakes and follow up with assistance office.');
@@ -108,7 +109,7 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
             <span className="text-xs text-stone-500">Rest well. Tomorrow will start with a fresh calm plan.</span>
             <button
               onClick={handleFinishReview}
-              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{prepared ? 'Tomorrow Prepared ✓' : 'Lock in Tomorrow Schedule'}</span>

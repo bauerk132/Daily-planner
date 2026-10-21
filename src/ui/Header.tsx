@@ -58,19 +58,19 @@ export const Header: React.FC<HeaderProps> = ({
               <div className="hidden md:flex items-center gap-1">
                 <button
                   onClick={() => onTimeChange('09:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '09:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '09:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'} focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500`}
                 >
                   9 AM
                 </button>
                 <button
                   onClick={() => onTimeChange('12:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '12:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '12:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'} focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500`}
                 >
                   12 PM
                 </button>
                 <button
                   onClick={() => onTimeChange('16:00')}
-                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '16:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'}`}
+                  className={`px-1.5 py-0.5 rounded text-[11px] ${simulatedTime === '16:00' ? 'bg-stone-900 text-white font-medium' : 'text-stone-600 hover:bg-stone-200'} focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500`}
                 >
                   4 PM
                 </button>
@@ -100,7 +100,7 @@ export const Header: React.FC<HeaderProps> = ({
               id="replan-btn-header"
               onClick={onReplan}
               disabled={isReplanning}
-              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer"
+              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-medium px-3 py-1.5 rounded-lg shadow-sm transition-all disabled:opacity-50 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
             >
               <RotateCcw className={`w-3.5 h-3.5 ${isReplanning ? 'animate-spin' : ''}`} />
               <span className="hidden sm:inline">Replan Remainder</span>

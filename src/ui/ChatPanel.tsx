@@ -59,7 +59,7 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
           <button
             key={idx}
             onClick={() => onSendMessage(p)}
-            className="px-2 py-0.5 rounded-full bg-white hover:bg-stone-200 border border-stone-200 text-stone-600 whitespace-nowrap transition-colors cursor-pointer shrink-0"
+            className="px-2 py-0.5 rounded-full bg-white hover:bg-stone-200 border border-stone-200 text-stone-600 whitespace-nowrap transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
           >
             "{p.length > 32 ? p.slice(0, 30) + '...' : p}"
           </button>
