@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { ChatMessage } from '../models/types.ts';
 import { Send, Bot, User, Sparkles } from 'lucide-react';
 
@@ -7,6 +7,13 @@ interface ChatPanelProps {
   onSendMessage: (text: string) => void;
   isLoading: boolean;
 }
+
+const samplePrompts = [
+  "I didn't get anything done and it's already 4 PM.",
+  "I have a test tomorrow, 3h of job applications, appointment at noon, and need to call assistance office.",
+  "I finished the call, what's next?",
+  "What are my top 3 priorities today?"
+];
 
 export const ChatPanel: React.FC<ChatPanelProps> = ({
   messages,
@@ -27,14 +34,58 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
     setInputText('');
   };
 
-  const samplePrompts = [
-    "I didn't get anything done and it's already 4 PM.",
-    "I have a test tomorrow, 3h of job applications, appointment at noon, and need to call assistance office.",
-    "I finished the call, what's next?",
-    "What are my top 3 priorities today?"
-  ];
+
+  const memoizedSamplePrompts = useMemo(() => (
+    samplePrompts.map((p, idx) => (
+      <button
+        key={idx}
+        onClick={() => onSendMessage(p)}
+        className="px-2 py-0.5 rounded-full bg-white hover:bg-stone-200 border border-stone-200 text-stone-600 whitespace-nowrap transition-colors cursor-pointer shrink-0 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
+      >
+        "{p.length > 32 ? p.slice(0, 30) + '...' : p}"
+      </button>
+    ))
+  ), [onSendMessage]);
+
+  const memoizedMessages = useMemo(() => (
+    messages.map((m) => {
+      const isUser = m.sender === 'user';
+      return (
+        <div
+          key={m.id}
+          className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}
+        >
+          <div
+            className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
+              isUser ? 'bg-stone-800 text-white' : 'bg-stone-200 text-stone-700'
+            }`}
+          >
+            {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
+          </div>
+
+          <div
+            className={`max-w-[82%] p-3 rounded-xl leading-relaxed ${
+              isUser
+                ? 'bg-stone-900 text-stone-50 rounded-tr-none'
+                : 'bg-stone-100/90 text-stone-900 rounded-tl-none border border-stone-200/60'
+            }`}
+          >
+            <div className="whitespace-pre-line">{m.text}</div>
+            <div
+              className={`text-[9px] mt-1.5 font-mono ${
+                isUser ? 'text-stone-400 text-right' : 'text-stone-400'
+              }`}
+            >
+              {m.timestamp}
+            </div>
+          </div>
+        </div>
+      );
+    })
+  ), [messages]);
 
   return (
+
     <div className="border border-stone-200 rounded-xl bg-white flex flex-col h-[650px] shadow-xs">
       {/* Header */}
       <div className="p-3.5 border-b border-stone-100 flex items-center justify-between">
@@ -55,53 +106,12 @@ export const ChatPanel: React.FC<ChatPanelProps> = ({
       {/* Suggested Quick Prompt Pills */}
       <div className="p-2.5 bg-stone-50/70 border-b border-stone-100 flex items-center gap-1.5 overflow-x-auto text-[11px] scrollbar-none">
         <Sparkles className="w-3 h-3 text-stone-400 shrink-0 ml-1" />
-        {samplePrompts.map((p, idx) => (
-          <button
-            key={idx}
-            onClick={() => onSendMessage(p)}
-            className="px-2 py-0.5 rounded-full bg-white hover:bg-stone-200 border border-stone-200 text-stone-600 whitespace-nowrap transition-colors cursor-pointer shrink-0"
-          >
-            "{p.length > 32 ? p.slice(0, 30) + '...' : p}"
-          </button>
-        ))}
+        {memoizedSamplePrompts}
       </div>
 
       {/* Messages Scroll Area */}
       <div className="flex-1 p-4 overflow-y-auto space-y-3.5 text-xs">
-        {messages.map((m) => {
-          const isUser = m.sender === 'user';
-          return (
-            <div
-              key={m.id}
-              className={`flex items-start gap-2.5 ${isUser ? 'flex-row-reverse' : ''}`}
-            >
-              <div
-                className={`w-6 h-6 rounded-full flex items-center justify-center shrink-0 text-[10px] font-bold ${
-                  isUser ? 'bg-stone-800 text-white' : 'bg-stone-200 text-stone-700'
-                }`}
-              >
-                {isUser ? <User className="w-3.5 h-3.5" /> : <Bot className="w-3.5 h-3.5" />}
-              </div>
-
-              <div
-                className={`max-w-[82%] p-3 rounded-xl leading-relaxed ${
-                  isUser
-                    ? 'bg-stone-900 text-stone-50 rounded-tr-none'
-                    : 'bg-stone-100/90 text-stone-900 rounded-tl-none border border-stone-200/60'
-                }`}
-              >
-                <div className="whitespace-pre-line">{m.text}</div>
-                <div
-                  className={`text-[9px] mt-1.5 font-mono ${
-                    isUser ? 'text-stone-400 text-right' : 'text-stone-400'
-                  }`}
-                >
-                  {m.timestamp}
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        {memoizedMessages}
 
         {isLoading && (
           <div className="flex items-center gap-2 text-stone-400 text-xs py-2">

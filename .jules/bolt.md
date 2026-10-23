@@ -1,3 +1,7 @@
 ## 2025-03-04 - React Performance: Memoizing O(N) Array Operations
 **Learning:** In React applications, especially those dealing with frequent state updates (like a ticking clock or live schedule), recalculating derived state (filtering, sorting, aggregation) from large arrays on every render can cause significant performance bottlenecks and application-wide slowdowns.
 **Action:** Always wrap O(N) or worse operations derived from large arrays (e.g., `tasks.filter(...)`, `schedule.reduce(...)`) in `useMemo` hooks to ensure these expensive calculations are only re-run when their specific dependencies (`tasks`, `schedule`) change, not on every component re-render.
+
+## 2023-10-23 - Memoizing O(N) Array JSX Renders in React
+**Learning:** For React performance, standard list renderings (e.g. `array.map()` returning JSX elements) re-evaluate and create new VDOM arrays on every single render pass even if the source data hasn't changed. In files like `ChatPanel.tsx` or `Timeline.tsx` with dynamic schedules, this scales O(N) and degrades framerates during frequent state updates like timers.
+**Action:** Always extract the expensive `.map()` logic inside the component body, wrap it in a `useMemo` hook with only the exact dependencies needed (e.g., the array source), and render the memoized variable in the return JSX payload to adhere to React Rules of Hooks while optimizing O(N) operations.

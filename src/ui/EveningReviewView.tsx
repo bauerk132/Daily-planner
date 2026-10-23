@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Task } from '../models/types.ts';
 import { Moon, CheckCircle, ArrowRight, Calendar, Sparkles } from 'lucide-react';
 
@@ -19,6 +19,24 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
   const [reflection, setReflection] = useState<string>('Made solid progress on high-leverage obligations today.');
   const [tomorrowFocus, setTomorrowFocus] = useState<string>('Review practice exam mistakes and follow up with assistance office.');
   const [prepared, setPrepared] = useState<boolean>(false);
+
+  const memoizedCompletedTasks = useMemo(() => (
+    completedTasks.map(t => (
+      <div key={t.id} className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-200 text-xs flex items-center gap-2 text-emerald-900 font-medium">
+        <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+        <span className="truncate">{t.title}</span>
+      </div>
+    ))
+  ), [completedTasks]);
+
+  const memoizedPendingTasks = useMemo(() => (
+    pendingTasks.map(t => (
+      <div key={t.id} className="p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs flex items-center justify-between">
+        <span className="text-stone-800 font-medium">{t.title}</span>
+        <span className="text-stone-500 font-mono text-[11px]">{t.estimated_duration}m • {t.priority}</span>
+      </div>
+    ))
+  ), [pendingTasks]);
 
   const handleFinishReview = () => {
     setPrepared(true);
@@ -48,12 +66,7 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
             </span>
             {completedTasks.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                {completedTasks.map(t => (
-                  <div key={t.id} className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-200 text-xs flex items-center gap-2 text-emerald-900 font-medium">
-                    <CheckCircle className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span className="truncate">{t.title}</span>
-                  </div>
-                ))}
+                {memoizedCompletedTasks}
               </div>
             ) : (
               <p className="text-xs text-stone-500 italic p-3 bg-stone-50 rounded-lg">
@@ -68,12 +81,7 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
               2. What naturally carries over to tomorrow ({pendingTasks.length})
             </span>
             <div className="space-y-1.5">
-              {pendingTasks.map(t => (
-                <div key={t.id} className="p-2.5 rounded-lg bg-stone-50 border border-stone-200 text-xs flex items-center justify-between">
-                  <span className="text-stone-800 font-medium">{t.title}</span>
-                  <span className="text-stone-500 font-mono text-[11px]">{t.estimated_duration}m • {t.priority}</span>
-                </div>
-              ))}
+              {memoizedPendingTasks}
             </div>
           </div>
 
@@ -108,7 +116,7 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
             <span className="text-xs text-stone-500">Rest well. Tomorrow will start with a fresh calm plan.</span>
             <button
               onClick={handleFinishReview}
-              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
             >
               <Sparkles className="w-3.5 h-3.5" />
               <span>{prepared ? 'Tomorrow Prepared ✓' : 'Lock in Tomorrow Schedule'}</span>
