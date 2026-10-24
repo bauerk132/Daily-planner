@@ -32,6 +32,20 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     return true;
   }), [tasks, filter]);
 
+  // Performance optimization: Extract O(N) filter operations out of the JSX loop
+  // and compute them once per tasks change.
+  const tabCounts = useMemo(() => {
+    const counts = { pending: 0, recurring: 0, completed: 0, all: tasks.length };
+    tasks.forEach(t => {
+      if (t.status === 'completed') counts.completed++;
+      else counts.pending++;
+      if (Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'))) {
+        counts.recurring++;
+      }
+    });
+    return counts;
+  }, [tasks]);
+
   const getPriorityBadge = (priority: TaskPriority) => {
     switch (priority) {
       case 'urgent':
@@ -137,7 +151,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Task</span>
@@ -239,18 +253,13 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 my-3 text-xs flex-wrap">
         {(['pending', 'recurring', 'completed', 'all'] as const).map((tab) => {
-          const count = tasks.filter(t => {
-            if (tab === 'all') return true;
-            if (tab === 'completed') return t.status === 'completed';
-            if (tab === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-            return t.status !== 'completed';
-          }).length;
+          const count = tabCounts[tab];
 
           return (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
                 filter === tab ? 'bg-stone-200 text-stone-900 font-semibold' : 'text-stone-500 hover:text-stone-800'
               }`}
             >
