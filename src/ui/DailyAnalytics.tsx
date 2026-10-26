@@ -199,7 +199,7 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-distribution"
             onClick={() => setActiveMetricView('distribution')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
               activeMetricView === 'distribution' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
@@ -211,7 +211,7 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-progress"
             onClick={() => setActiveMetricView('progress')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
               activeMetricView === 'progress' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
