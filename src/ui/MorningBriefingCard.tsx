@@ -110,7 +110,7 @@ export const MorningBriefingCard: React.FC<MorningBriefingCardProps> = ({
             {onSelectAction && (
               <button
                 onClick={() => onSelectAction(briefing.recommended_first_action.title)}
-                className="flex items-center gap-1 text-[11px] font-semibold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-md transition-colors cursor-pointer"
+                className="flex items-center gap-1 text-[11px] font-semibold bg-emerald-700 hover:bg-emerald-800 text-white px-2.5 py-1.5 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
               >
                 <span>Start Now</span>
                 <ArrowRight className="w-3 h-3" />
