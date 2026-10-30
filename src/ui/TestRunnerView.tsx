@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { TestCaseResult } from '../tests/agent_tests.ts';
 import { CheckCircle2, XCircle, Play, RefreshCw, ShieldCheck, Cpu } from 'lucide-react';
 
@@ -25,7 +25,8 @@ export const TestRunnerView: React.FC<TestRunnerViewProps> = ({ initialResults }
     }
   };
 
-  const passedCount = results.filter(r => r.passed).length;
+  // Memoized O(N) array filtering to prevent application-wide re-render slowdowns
+  const passedCount = useMemo(() => results.filter(r => r.passed).length, [results]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">
@@ -51,7 +52,7 @@ export const TestRunnerView: React.FC<TestRunnerViewProps> = ({ initialResults }
           <button
             onClick={handleRunTests}
             disabled={isRunning}
-            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-stone-900 hover:bg-stone-800 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-colors cursor-pointer disabled:opacity-50 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isRunning ? 'animate-spin' : ''}`} />
             <span>{isRunning ? 'Running 10 Tests...' : 'Run All Tests'}</span>
