@@ -55,15 +55,27 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
 
   // 1. Task Completion Metrics
   // Memoized O(N) array operations to prevent application-wide re-render slowdowns
+  const { completedTasks, pendingTasks, completedMinutes, totalEstimatedMinutes } = useMemo(() => {
+    const comp: Task[] = [];
+    const pend: Task[] = [];
+    let compMins = 0;
+    let totalMins = 0;
+    for (const t of tasks) {
+      const dur = t.estimated_duration || 0;
+      totalMins += dur;
+      if (t.status === 'completed') {
+        comp.push(t);
+        compMins += dur;
+      } else {
+        pend.push(t);
+      }
+    }
+    return { completedTasks: comp, pendingTasks: pend, completedMinutes: compMins, totalEstimatedMinutes: totalMins };
+  }, [tasks]);
+
   const totalTasks = tasks.length;
-  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed'), [tasks]);
-  const pendingTasks = useMemo(() => tasks.filter(t => t.status !== 'completed'), [tasks]);
   const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
-  // Total estimated minutes completed vs remaining
-  // Memoized O(N) array operations
-  const completedMinutes = useMemo(() => completedTasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0), [completedTasks]);
-  const totalEstimatedMinutes = useMemo(() => tasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0), [tasks]);
   const remainingMinutes = Math.max(0, totalEstimatedMinutes - completedMinutes);
   const minutesPercentage = totalEstimatedMinutes > 0 
     ? Math.round((completedMinutes / totalEstimatedMinutes) * 100) 
@@ -199,7 +211,7 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-distribution"
             onClick={() => setActiveMetricView('distribution')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 text-[11px] font-medium ${
               activeMetricView === 'distribution' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
@@ -211,7 +223,7 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
           <button
             id="view-toggle-progress"
             onClick={() => setActiveMetricView('progress')}
-            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer text-[11px] font-medium ${
+            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 text-[11px] font-medium ${
               activeMetricView === 'progress' 
                 ? 'bg-white text-stone-900 font-semibold shadow-xs' 
                 : 'text-stone-500 hover:text-stone-900'
