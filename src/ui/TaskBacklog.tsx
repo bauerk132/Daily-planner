@@ -116,7 +116,31 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length;
+  const recurringCount = useMemo(() => tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length, [tasks]);
+
+  const tabCounts = useMemo(() => {
+    let pending = 0;
+    let completed = 0;
+    let recurring = 0;
+
+    tasks.forEach(t => {
+      if (t.status === 'completed') {
+        completed++;
+      } else {
+        pending++;
+      }
+      if (t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')) {
+        recurring++;
+      }
+    });
+
+    return {
+      all: tasks.length,
+      pending,
+      completed,
+      recurring
+    };
+  }, [tasks]);
 
   return (
     <div className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs">
@@ -137,7 +161,8 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
         </div>
         <button
           onClick={() => setIsAdding(!isAdding)}
-          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer"
+          aria-label="Add Task"
+          className="flex items-center gap-1 text-xs font-semibold bg-stone-100 hover:bg-stone-200 text-stone-800 px-2.5 py-1 rounded-md transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
         >
           <Plus className="w-3.5 h-3.5" />
           <span>Add Task</span>
@@ -152,7 +177,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
             placeholder="e.g. Call assistance office or Daily morning routine"
             value={newTitle}
             onChange={(e) => setNewTitle(e.target.value)}
-            className="w-full text-xs px-2.5 py-1.5 rounded bg-white border border-stone-300 focus:outline-none focus:ring-1 focus:ring-stone-900 font-medium"
+            className="w-full text-xs px-2.5 py-1.5 rounded bg-white border border-stone-300 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 font-medium"
             autoFocus
           />
           <div className="flex items-center gap-2 flex-wrap text-xs">
@@ -164,7 +189,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
                 step="5"
                 value={newDuration}
                 onChange={(e) => setNewDuration(Number(e.target.value))}
-                className="w-16 px-1.5 py-1 bg-white border border-stone-300 rounded font-mono text-xs"
+                className="w-16 px-1.5 py-1 bg-white border border-stone-300 rounded font-mono text-xs focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
               />
               <span className="text-stone-500">m</span>
             </div>
@@ -174,7 +199,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
               <select
                 value={newPriority}
                 onChange={(e) => setNewPriority(e.target.value as TaskPriority)}
-                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs"
+                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
               >
                 <option value="urgent">Urgent</option>
                 <option value="important">Important</option>
@@ -188,7 +213,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
               <select
                 value={newCategory}
                 onChange={(e) => setNewCategory(e.target.value as TaskCategory)}
-                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs"
+                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
               >
                 <option value="safety_housing_admin">Housing / Safety / Admin</option>
                 <option value="academic">Academic / Exam</option>
@@ -206,7 +231,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
               <select
                 value={newRecurrence}
                 onChange={(e) => setNewRecurrence(e.target.value as any)}
-                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs font-medium text-stone-800"
+                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs font-medium text-stone-800 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
               >
                 <option value="none">One-time</option>
                 <option value="daily">Daily</option>
@@ -222,13 +247,13 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
                 type="date"
                 value={newDueDate}
                 onChange={(e) => setNewDueDate(e.target.value)}
-                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs font-mono"
+                className="px-2 py-1 bg-white border border-stone-300 rounded text-xs font-mono focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
               />
             </div>
 
             <button
               type="submit"
-              className="ml-auto bg-stone-900 text-white text-xs font-semibold px-3 py-1 rounded hover:bg-stone-800 cursor-pointer"
+              className="ml-auto bg-stone-900 text-white text-xs font-semibold px-3 py-1 rounded hover:bg-stone-800 cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
             >
               Save
             </button>
@@ -239,18 +264,13 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       {/* Filter Tabs */}
       <div className="flex items-center gap-2 my-3 text-xs flex-wrap">
         {(['pending', 'recurring', 'completed', 'all'] as const).map((tab) => {
-          const count = tasks.filter(t => {
-            if (tab === 'all') return true;
-            if (tab === 'completed') return t.status === 'completed';
-            if (tab === 'recurring') return Boolean(t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring'));
-            return t.status !== 'completed';
-          }).length;
+          const count = tabCounts[tab];
 
           return (
             <button
               key={tab}
               onClick={() => setFilter(tab)}
-              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 ${
+              className={`capitalize px-2.5 py-1 rounded-md transition-colors cursor-pointer flex items-center gap-1.5 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 ${
                 filter === tab ? 'bg-stone-200 text-stone-900 font-semibold' : 'text-stone-500 hover:text-stone-800'
               }`}
             >
@@ -283,7 +303,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
                     type="checkbox"
                     checked={isDone}
                     onChange={() => onCompleteTask(t.id)}
-                    className="rounded border-stone-300 text-stone-900 focus:ring-stone-900 w-4 h-4 cursor-pointer shrink-0"
+                    className="rounded border-stone-300 text-stone-900 focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500 w-4 h-4 cursor-pointer shrink-0"
                   />
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 flex-wrap">
