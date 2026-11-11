@@ -116,14 +116,13 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
     setIsAdding(false);
   };
 
-  const recurringCount = useMemo(() => tasks.filter(t => t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')).length, [tasks]);
-
   const tabCounts = useMemo(() => {
     let pending = 0;
     let completed = 0;
     let recurring = 0;
 
-    tasks.forEach(t => {
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
       if (t.status === 'completed') {
         completed++;
       } else {
@@ -132,7 +131,7 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
       if (t.recurrence_rule || t.recurring_parent_id || t.labels?.includes('recurring')) {
         recurring++;
       }
-    });
+    }
 
     return {
       all: tasks.length,
@@ -149,13 +148,13 @@ export const TaskBacklog: React.FC<TaskBacklogProps> = ({
         <div className="flex items-center gap-2">
           <CheckSquare className="w-4 h-4 text-stone-600" />
           <h2 className="text-sm font-semibold text-stone-900">Task Backlog & Queue</h2>
-          {recurringCount > 0 && (
+          {tabCounts.recurring > 0 && (
             <span 
               className="text-[10px] font-medium text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded-full border border-indigo-100 flex items-center gap-1 hidden sm:inline-flex"
               title="Recurring tasks automatically instantiate in this backlog when their due date arrives"
             >
               <Repeat className="w-2.5 h-2.5 text-indigo-500" />
-              <span>{recurringCount} recurring</span>
+              <span>{tabCounts.recurring} recurring</span>
             </span>
           )}
         </div>
