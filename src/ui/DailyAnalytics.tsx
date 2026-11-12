@@ -56,14 +56,32 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
   // 1. Task Completion Metrics
   // Memoized O(N) array operations to prevent application-wide re-render slowdowns
   const totalTasks = tasks.length;
-  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed'), [tasks]);
-  const pendingTasks = useMemo(() => tasks.filter(t => t.status !== 'completed'), [tasks]);
-  const completionPercentage = totalTasks > 0 ? Math.round((completedTasks.length / totalTasks) * 100) : 0;
 
-  // Total estimated minutes completed vs remaining
-  // Memoized O(N) array operations
-  const completedMinutes = useMemo(() => completedTasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0), [completedTasks]);
-  const totalEstimatedMinutes = useMemo(() => tasks.reduce((acc, t) => acc + (t.estimated_duration || 0), 0), [tasks]);
+  const {
+    completedTasksCount,
+    completedMinutes,
+    totalEstimatedMinutes
+  } = useMemo(() => {
+    let completedCount = 0;
+    let completedMins = 0;
+    let totalMins = 0;
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
+      const duration = t.estimated_duration || 0;
+      totalMins += duration;
+      if (t.status === 'completed') {
+        completedCount++;
+        completedMins += duration;
+      }
+    }
+    return {
+      completedTasksCount: completedCount,
+      completedMinutes: completedMins,
+      totalEstimatedMinutes: totalMins
+    };
+  }, [tasks]);
+
+  const completionPercentage = totalTasks > 0 ? Math.round((completedTasksCount / totalTasks) * 100) : 0;
   const remainingMinutes = Math.max(0, totalEstimatedMinutes - completedMinutes);
   const minutesPercentage = totalEstimatedMinutes > 0 
     ? Math.round((completedMinutes / totalEstimatedMinutes) * 100) 
@@ -80,14 +98,15 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
       fixed: { minutes: 0, blockCount: 0 },
     };
 
-    schedule.forEach(block => {
+    let totalMins = 0;
+    for (let i = 0; i < schedule.length; i++) {
+      const block = schedule[i];
       const duration = Math.max(0, getBlockDuration(block.start, block.end));
       const prioKey = block.priority in timeMap ? block.priority : 'optional';
       timeMap[prioKey].minutes += duration;
       timeMap[prioKey].blockCount += 1;
-    });
-
-    const totalMins = Object.values(timeMap).reduce((acc, val) => acc + val.minutes, 0);
+      totalMins += duration;
+    }
 
     const distData = [
       {
@@ -143,21 +162,38 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
   // 3. Task Completion by Priority Level
   // Memoized O(N) array operations for computing task completion by priority
   const priorityCompletionBreakdown = useMemo(() => {
+    const prioStats: Record<string, { totalCount: number, completedCount: number, totalMins: number, doneMins: number }> = {
+      urgent: { totalCount: 0, completedCount: 0, totalMins: 0, doneMins: 0 },
+      important: { totalCount: 0, completedCount: 0, totalMins: 0, doneMins: 0 },
+      flexible: { totalCount: 0, completedCount: 0, totalMins: 0, doneMins: 0 },
+      optional: { totalCount: 0, completedCount: 0, totalMins: 0, doneMins: 0 }
+    };
+
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
+      if (t.priority in prioStats) {
+        const duration = t.estimated_duration || 0;
+        prioStats[t.priority].totalCount++;
+        prioStats[t.priority].totalMins += duration;
+        if (t.status === 'completed') {
+          prioStats[t.priority].completedCount++;
+          prioStats[t.priority].doneMins += duration;
+        }
+      }
+    }
+
     return (['urgent', 'important', 'flexible', 'optional'] as TaskPriority[]).map(prio => {
-      const tasksInPrio = tasks.filter(t => t.priority === prio);
-      const completedInPrio = tasksInPrio.filter(t => t.status === 'completed');
-      const totalMins = tasksInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
-      const doneMins = completedInPrio.reduce((acc, t) => acc + (t.estimated_duration || 0), 0);
+      const stats = prioStats[prio];
       return {
         priority: prio,
         name: PRIORITY_CONFIG[prio].label,
-        totalCount: tasksInPrio.length,
-        completedCount: completedInPrio.length,
-        pendingCount: tasksInPrio.length - completedInPrio.length,
-        percent: tasksInPrio.length > 0 ? Math.round((completedInPrio.length / tasksInPrio.length) * 100) : 0,
-        totalMinutes: totalMins,
-        completedMinutes: doneMins,
-        remainingMinutes: Math.max(0, totalMins - doneMins),
+        totalCount: stats.totalCount,
+        completedCount: stats.completedCount,
+        pendingCount: stats.totalCount - stats.completedCount,
+        percent: stats.totalCount > 0 ? Math.round((stats.completedCount / stats.totalCount) * 100) : 0,
+        totalMinutes: stats.totalMins,
+        completedMinutes: stats.doneMins,
+        remainingMinutes: Math.max(0, stats.totalMins - stats.doneMins),
         color: PRIORITY_CONFIG[prio].color
       };
     }).filter(p => p.totalCount > 0);
@@ -174,9 +210,9 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
 
   // Donut completion chart data
   const completionDonutData = useMemo(() => [
-    { name: 'Completed', value: completedTasks.length, fill: '#10b981' },
-    { name: 'Pending', value: Math.max(0, totalTasks - completedTasks.length), fill: '#e5e7eb' },
-  ], [completedTasks.length, totalTasks]);
+    { name: 'Completed', value: completedTasksCount, fill: '#10b981' },
+    { name: 'Pending', value: Math.max(0, totalTasks - completedTasksCount), fill: '#e5e7eb' },
+  ], [completedTasksCount, totalTasks]);
 
   return (
     <div id="daily-analytics-widget" className="border border-stone-200 rounded-xl bg-white p-5 shadow-xs transition-all space-y-5">
@@ -232,7 +268,7 @@ export const DailyAnalytics: React.FC<DailyAnalyticsProps> = ({
               Tasks Completed
             </span>
             <div className="flex items-baseline gap-1.5 mt-0.5">
-              <span className="text-xl font-bold font-mono text-stone-900">{completedTasks.length}</span>
+              <span className="text-xl font-bold font-mono text-stone-900">{completedTasksCount}</span>
               <span className="text-xs text-stone-500 font-mono">/ {totalTasks} total</span>
             </div>
             <span className="text-[11px] font-medium text-emerald-600 block mt-0.5">
