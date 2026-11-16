@@ -123,7 +123,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <button
           id="focus-complete-btn"
           onClick={onComplete}
-          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors cursor-pointer"
+          className="flex-1 flex items-center justify-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold py-2 px-3 rounded-lg shadow-2xs transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
         >
           <CheckCircle className="w-4 h-4" />
           <span>Mark Complete</span>
@@ -132,7 +132,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <button
           id="focus-skip-btn"
           onClick={onSkip}
-          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
         >
           <SkipForward className="w-3.5 h-3.5" />
           <span>Skip</span>
@@ -141,7 +141,7 @@ export const FocusCard: React.FC<FocusCardProps> = ({
         <button
           id="focus-replan-btn"
           onClick={onReplan}
-          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-medium py-2 px-3 rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:outline-none focus-visible:ring-stone-500"
         >
           <RotateCcw className="w-3.5 h-3.5" />
           <span>Replan</span>
