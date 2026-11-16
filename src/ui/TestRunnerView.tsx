@@ -25,7 +25,15 @@ export const TestRunnerView: React.FC<TestRunnerViewProps> = ({ initialResults }
     }
   };
 
-  const passedCount = useMemo(() => results.filter(r => r.passed).length, [results]);
+  const passedCount = useMemo(() => {
+    let count = 0;
+    for (let i = 0; i < results.length; i++) {
+      if (results[i].passed) {
+        count++;
+      }
+    }
+    return count;
+  }, [results]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-5">

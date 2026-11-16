@@ -13,8 +13,19 @@ export const EveningReviewView: React.FC<EveningReviewViewProps> = ({
   onCompleteTask,
   onPrepareTomorrow
 }) => {
-  const completedTasks = useMemo(() => tasks.filter(t => t.status === 'completed'), [tasks]);
-  const pendingTasks = useMemo(() => tasks.filter(t => t.status !== 'completed'), [tasks]);
+  const { completedTasks, pendingTasks } = useMemo(() => {
+    const completed: Task[] = [];
+    const pending: Task[] = [];
+    for (let i = 0; i < tasks.length; i++) {
+      const t = tasks[i];
+      if (t.status === 'completed') {
+        completed.push(t);
+      } else {
+        pending.push(t);
+      }
+    }
+    return { completedTasks: completed, pendingTasks: pending };
+  }, [tasks]);
 
   const [reflection, setReflection] = useState<string>('Made solid progress on high-leverage obligations today.');
   const [tomorrowFocus, setTomorrowFocus] = useState<string>('Review practice exam mistakes and follow up with assistance office.');
